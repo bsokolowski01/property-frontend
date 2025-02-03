@@ -13,19 +13,19 @@ export default function Home() {
   const [filterType, setFilterType] = useState("all");
   const [sortOption, setSortOption] = useState("price-asc");
 
-  const apiURL = process.env.NEXT_PUBLIC_API_URL;
+  const api = process.env.NEXT_PUBLIC_API_URL;
 
   useEffect(() => {
-    if (!apiURL) return;
+    if (!api) return;
     
-    fetch(apiURL, {
+    fetch(api, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query: "{ properties { id address rooms status type rent price } }" }),
     })
       .then((res) => res.json())
       .then((data) => setProperties(data.data.properties));
-  }, [apiURL]);
+  }, [api]);
 
   const filteredProperties = properties.filter((property) =>
     property.address.toLowerCase().includes(search.toLowerCase()) &&
