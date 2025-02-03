@@ -1,101 +1,97 @@
-import Image from "next/image";
+"use client"
+
+import { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
+import Link from "next/link";
+import { Property } from "../types/types";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [search, setSearch] = useState("");
+  const [filterType, setFilterType] = useState("all");
+  const [sortOption, setSortOption] = useState("price-asc");
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+  const apiURL = process.env.NEXT_PUBLIC_API_URL;
+
+  useEffect(() => {
+    if (!apiURL) return;
+    
+    fetch(apiURL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query: "{ properties { id address rooms status type rent price } }" }),
+    })
+      .then((res) => res.json())
+      .then((data) => setProperties(data.data.properties));
+  }, [apiURL]);
+
+  const filteredProperties = properties.filter((property) =>
+    property.address.toLowerCase().includes(search.toLowerCase()) &&
+    (filterType === "all" || property.type === filterType)
+  );
+
+  const sortedProperties = [...filteredProperties].sort((a, b) => {
+    if (sortOption === "price-asc") {
+      return (a.price || a.rent || 0) - (b.price || b.rent || 0);
+    } else if (sortOption === "price-desc") {
+      return (b.price || b.rent || 0) - (a.price || a.rent || 0);
+    } else if (sortOption === "rooms-asc") {
+      return a.rooms - b.rooms;
+    } else if (sortOption === "rooms-desc") {
+      return b.rooms - a.rooms;
+    }
+    return 0;
+  });
+
+  return (
+    <div className="p-10">
+      <div className="mb-6 flex gap-4">
+        <input
+          type="text"
+          placeholder="Search by address..."
+          className="p-2 border rounded-lg w-full"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <select
+          className="p-2 border rounded-lg"
+          value={filterType}
+          onChange={(e) => setFilterType(e.target.value)}
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+          <option value="all">All Types</option>
+          <option value="apartment">Apartment</option>
+          <option value="house">House</option>
+          <option value="land">Land</option>
+        </select>
+        <select
+          className="p-2 border rounded-lg"
+          value={sortOption}
+          onChange={(e) => setSortOption(e.target.value)}
         >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          <option value="price-asc">Price: Low to High</option>
+          <option value="price-desc">Price: High to Low</option>
+          <option value="rooms-asc">Rooms: Fewest to Most</option>
+          <option value="rooms-desc">Rooms: Most to Fewest</option>
+        </select>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {sortedProperties.map((property) => (
+          <motion.div key={property.id} whileHover={{ scale: 1.05 }}>
+            <Card className="p-5 shadow-lg rounded-2xl">
+              <CardContent>
+                <h2 className="text-xl font-bold">{property.address}</h2>
+                <p className="text-sm text-gray-600">{property.rooms} rooms - {property.type}</p>
+                <p className="text-lg font-semibold mt-2">{property.status === "for sale" ? property.price : property.rent}</p>
+                <Link href={`/property/${property.id}`}>
+                  <Button className="mt-4 w-full">View Details</Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
+      </div>
     </div>
   );
 }
