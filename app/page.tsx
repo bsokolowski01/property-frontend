@@ -13,7 +13,7 @@ export default function Home() {
   const [filterType, setFilterType] = useState("all");
   const [sortOption, setSortOption] = useState("price-asc");
 
-  const api = process.env.NEXT_PUBLIC_VERCEL_URL;
+  const api = process.env.NEXT_PUBLIC_API_URL;
 
   console.log("API URL:", process.env.NEXT_PUBLIC_API_URL);
 
